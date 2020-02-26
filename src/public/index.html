@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        const isEventSourceAvail = !!window.EventSource;
+        if (!isEventSourceAvail) {
+          alert("Your browser is not supported");
+          console.log("Your browser doesn't support server sent events");
+          return;
+        }
+
+        const hashTag = prompt("Enter a tag to follow");
+        if (hashTag) {
+          document.getElementById("tracked-tag").innerHTML = hashTag;
+
+          const source = new EventSource(
+            `/api/watch?&tag=${encodeURIComponent(
+              hashTag
+            )}&source=twitter,twitch,facebook`
+          );
+
+          source.addEventListener("increment-saved-tweets-count", event => {
+            const tweetsCount = document.getElementById("tweets-count");
+            tweetsCount.innerHTML = +tweetsCount.innerHTML + 1;
+          });
+          source.addEventListener("total-tweets-count", event => {
+            const savedTweets = document.getElementById("total-tweets-count");
+            savedTweets.innerHTML = event.data;
+          });
+        }
+      });
+    </script>
+  </head>
+  <body>
+    <div id="content">
+      <p>Hashtag: <span id="tracked-tag"></span></p>
+      <p>Watched tweets count: <span id="tweets-count">0</span></p>
+      <p>Total saved tweets count: <span id="total-tweets-count">0</span></p>
+    </div>
+  </body>
+</html>
